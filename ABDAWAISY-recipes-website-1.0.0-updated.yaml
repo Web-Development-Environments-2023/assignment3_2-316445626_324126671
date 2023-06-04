@@ -1,0 +1,399 @@
+---
+openapi: 3.0.3
+info:
+  title: Recipes Website
+  description: The API for assignment 3 in development enviroments
+  version: 1.0.0
+servers:
+- url: https://awaisy-pich.cs.bgu.ac.il/
+  description: Assignment 3.2
+paths:
+  /Register:
+    post:
+      tags:
+      - Authentication
+      summary: Register a new user
+      description: Register a new user with the provided information
+      operationId: registerUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Wrong input
+  /users/favorites:
+    get:
+      tags:
+      - Favorites
+      summary: get the recipes from user's favorites
+      description: returns the recipes from the user's favorites recipes
+      operationId: getFavoriteRecipes
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getRecipe'
+    post:
+      tags:
+      - Favorites
+      summary: Add a recipe to favorites
+      description: Add a recipe to the user's favorites
+      operationId: markAsFavorite
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/addRecipe'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid input
+  /Login:
+    post:
+      tags:
+      - Authentication
+      summary: User login
+      description: Authenticate the user with the provided credentials
+      operationId: loginUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUserRequest'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+  /Logout:
+    post:
+      tags:
+      - Authentication
+      summary: User logout
+      description: log out the user from the system
+      operationId: logout
+      responses:
+        "200":
+          description: Logout successful
+  /recipes/recipe:
+    get:
+      tags:
+      - Recipes
+      summary: Get a recipe from the database by id
+      description: Returns a recipe by id
+      operationId: getRecipe
+      parameters:
+      - name: id
+        in: query
+        description: The id of the recipe you want
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getRecipe'
+        "404":
+          description: recipe not found
+  /recipes/search:
+    get:
+      tags:
+      - Recipes
+      summary: returns a list of recipes given a query search
+      description: Returns list of recipes
+      operationId: searchRecipes
+      parameters:
+      - name: key
+        in: query
+        description: the key words to search
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: the amount of recipes to show
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getRecipes'
+        "404":
+          description: recipes not found
+  /recipes/random:
+    get:
+      tags:
+      - Recipes
+      description: Returns 3 random recipes
+      operationId: getRandomRecipes
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getRecipes'
+  /users/addWatched:
+    post:
+      tags:
+      - Users
+      summary: add to the database the recipes that the user watched
+      description: add to database (table watched) the recipe id for the user
+      operationId: addWathced
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/addWatched'
+        required: true
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: recipe not found
+  /users/addRecipe:
+    post:
+      tags:
+      - Users
+      summary: add to the database a recipe that the user has
+      description: add to database the user's recipe
+      operationId: addRecipe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/addRecipe'
+        required: true
+      responses:
+        "200":
+          description: OK
+  /users/myRecipes:
+    get:
+      tags:
+      - Users
+      summary: returns the recipes that the user added
+      description: return list of recipes
+      operationId: myRecipes
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getRecipes'
+  /users/lastWatched:
+    get:
+      tags:
+      - Users
+      summary: returns the user's last watched recipes by amount given
+      description: return list of recipes
+      operationId: lastWatched
+      parameters:
+      - name: limit
+        in: query
+        description: the amount of recipes to return (most of the times will be 3)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+        example: 5
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getRecipes'
+components:
+  schemas:
+    RegisterUserRequest:
+      required:
+      - confirmPassword
+      - country
+      - email
+      - firstname
+      - lastname
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          maxLength: 8
+          minLength: 3
+          pattern: "^[a-zA-Z]+$"
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        country:
+          type: string
+        password:
+          maxLength: 10
+          minLength: 5
+          pattern: "^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]+$"
+          type: string
+        confirmPassword:
+          type: string
+        email:
+          type: string
+          format: email
+    LoginUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    Recipe:
+      required:
+      - gluten
+      - image
+      - ingridiants
+      - instructions
+      - name
+      - numOfPortions
+      - popularity
+      - time
+      - vegenOrVegterian
+      properties:
+        image:
+          $ref: '#/components/schemas/image'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/image'
+        time:
+          type: number
+          description: The time in minutes that takes to make the meal
+          format: float
+          example: 20
+        name:
+          type: string
+          description: The name of the recipe
+          example: cookie
+        popularity:
+          type: integer
+          description: The number of likes the recipe has
+          example: 38
+        vegenOrVegterian:
+          type: string
+          description: Can be vegan/vagiterian/none
+          example: vegan
+        gluten:
+          type: boolean
+          description: Tells if the meal include gluten
+          example: true
+        instructions:
+          type: array
+          items:
+            type: string
+            description: Array of instuctions of the recipe
+            example: First put 1 kg of white flour into the mixer
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recipe_ingredients'
+        numOfPortions:
+          type: number
+          description: The amount of portions from the recipe
+          example: 4
+    image:
+      required:
+      - path
+      properties:
+        path:
+          type: string
+          description: URL to the image
+          example: https://url.com/image.png
+    addWatched:
+      properties:
+        recipeId:
+          type: integer
+          description: The id of the recipe that the user watched
+          example: 36
+    getRecipe:
+      properties:
+        id:
+          type: integer
+          description: The recipe id
+          example: 7
+        recipe:
+          $ref: '#/components/schemas/Recipe'
+    getRecipes:
+      properties:
+        amount:
+          type: integer
+          description: The amount of recipes to returned
+          example: 10
+        recipes:
+          type: array
+          items:
+            $ref: '#/components/schemas/getRecipe'
+    addRecipe:
+      properties:
+        name:
+          type: string
+          example: pasta
+        proccess_time:
+          type: string
+          example: 30 min
+        vegan_veg:
+          type: string
+          example: vegan
+        gluten:
+          type: integer
+          example: 1
+        image:
+          type: string
+        ingridiants:
+          type: string
+        instructions:
+          type: string
+        numOfPortions:
+          type: integer
+          example: 4
+    Recipe_amount:
+      type: object
+      properties:
+        amount:
+          type: number
+          description: The amount required from the ingridiant
+          example: 1.5
+        measure:
+          type: string
+          description: The name of the unit's measure
+          example: kg
+    Recipe_ingredients:
+      type: object
+      properties:
+        ingredient:
+          type: string
+          description: A single ingredient name
+          example: sugar
+        amount:
+          $ref: '#/components/schemas/Recipe_amount'
